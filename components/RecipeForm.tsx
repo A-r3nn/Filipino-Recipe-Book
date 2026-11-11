@@ -24,7 +24,7 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
   const [error, setError] = useState("");
 
   const existing = [recipe?.image ?? null, recipe?.image2 ?? null, recipe?.image3 ?? null];
-  const labels = ["Image *", "Image 2 (optional)", "Image 3 (optional)"];
+  const labels = ["Image (optional)", "Image 2 (optional)", "Image 3 (optional)"];
 
   function pickFile(i: number, file: File | null) {
     setFiles((prev) => prev.map((f, idx) => (idx === i ? file : f)));
@@ -44,10 +44,6 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
       !instructions.trim()
     ) {
       setError("Please fill in all required fields.");
-      return;
-    }
-    if (!files[0] && !existing[0]) {
-      setError("Please choose a main image.");
       return;
     }
 
@@ -118,7 +114,7 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
           {labels.map((label, i) => (
             <div className="form-group full-width" key={label}>
               <label>{label}</label>
-              <input type="file" accept="image/*" required={i === 0 && !existing[0]} onChange={(e) => pickFile(i, e.target.files?.[0] ?? null)} />
+              <input type="file" accept="image/*" onChange={(e) => pickFile(i, e.target.files?.[0] ?? null)} />
               {files[i] ? (
                 <small>New file: {files[i]!.name}</small>
               ) : existing[i] ? (

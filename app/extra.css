@@ -264,3 +264,7 @@ body { margin-bottom: 0; }
   object-fit: cover; 
   border-radius: 8px; 
 }
+
+.detail-images-grid {
+  gap: 0 !important;
+}
