@@ -268,3 +268,6 @@ body { margin-bottom: 0; }
 .detail-images-grid {
   gap: 0 !important;
 }
+.dropdown-menu {
+  z-index: 1100;
+}

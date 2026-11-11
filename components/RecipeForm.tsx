@@ -10,6 +10,10 @@ type Props = {
   onSaved: () => void;
 };
 
+const MESSAGE = "Please fill out this field.";
+const errorText = { color: "#d93025", fontSize: 12, marginTop: 4, display: "block" } as const;
+const errorBorder = { borderColor: "#d93025" } as const;
+
 export default function RecipeForm({ categories, recipe, onClose, onSaved }: Props) {
   const editing = !!recipe;
   const [title, setTitle] = useState(recipe?.title ?? "");
@@ -20,11 +24,16 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
   const [ingredients, setIngredients] = useState(recipe?.ingredients ?? "");
   const [instructions, setInstructions] = useState(recipe?.instructions ?? "");
   const [files, setFiles] = useState<(File | null)[]>([null, null, null]);
+  const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
 
   const existing = [recipe?.image ?? null, recipe?.image2 ?? null, recipe?.image3 ?? null];
   const labels = ["Image (optional)", "Image 2 (optional)", "Image 3 (optional)"];
+
+  // A field shows its error after the first Add/Save click, and clears once it has text
+  const emptyText = (v: string) => submitted && !v.trim();
+  const emptyServings = submitted && (!servings || Number(servings) < 1);
 
   function pickFile(i: number, file: File | null) {
     setFiles((prev) => prev.map((f, idx) => (idx === i ? file : f)));
@@ -33,17 +42,22 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setError("");
+    setSubmitted(true);
 
-    if (
+    const invalid =
       !title.trim() ||
       !cookingTime.trim() ||
       !servings ||
       Number(servings) < 1 ||
       !description.trim() ||
       !ingredients.trim() ||
-      !instructions.trim()
-    ) {
-      setError("Please fill in all required fields.");
+      !instructions.trim();
+
+    if (invalid) {
+      // jump to the first field that has an error
+      setTimeout(() => {
+        document.querySelector("[data-field-error]")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 0);
       return;
     }
 
@@ -55,11 +69,11 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
       const payload = {
         title: title.trim(),
         category_id: categoryId,
-        cooking_time: cookingTime.trim() || null,
-        servings: servings ? Number(servings) : null,
-        description: description.trim() || null,
-        ingredients: ingredients.trim() || null,
-        instructions: instructions.trim() || null,
+        cooking_time: cookingTime.trim(),
+        servings: Number(servings),
+        description: description.trim(),
+        ingredients: ingredients.trim(),
+        instructions: instructions.trim(),
         image: urls[0],
         image2: urls[1],
         image3: urls[2],
@@ -83,10 +97,16 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
           <span className="close-modal" onClick={onClose}>&times;</span>
         </div>
 
-        <form className="recipe-form" onSubmit={handleSubmit}>
+        <form className="recipe-form" onSubmit={handleSubmit} noValidate>
           <div className="form-group full-width">
-            <label>Recipe Name *</label>
-            <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
+            <label>Recipe Name</label>
+            <input
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              style={emptyText(title) ? errorBorder : undefined}
+            />
+            {emptyText(title) && <small data-field-error style={errorText}>{MESSAGE}</small>}
           </div>
 
           <div className="form-row">
@@ -99,15 +119,29 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
               </select>
             </div>
             <div className="form-group">
-              <label>Cooking Time *</label>
-              <input type="text" placeholder="e.g., 30 min" value={cookingTime} onChange={(e) => setCookingTime(e.target.value)} required />
+              <label>Cooking Time</label>
+              <input
+                type="text"
+                placeholder="e.g., 30 min"
+                value={cookingTime}
+                onChange={(e) => setCookingTime(e.target.value)}
+                style={emptyText(cookingTime) ? errorBorder : undefined}
+              />
+              {emptyText(cookingTime) && <small data-field-error style={errorText}>{MESSAGE}</small>}
             </div>
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label>Servings *</label>
-              <input type="number" min={1} value={servings} onChange={(e) => setServings(e.target.value)} required />
+              <label>Servings</label>
+              <input
+                type="number"
+                min={1}
+                value={servings}
+                onChange={(e) => setServings(e.target.value)}
+                style={emptyServings ? errorBorder : undefined}
+              />
+              {emptyServings && <small data-field-error style={errorText}>{MESSAGE}</small>}
             </div>
           </div>
 
@@ -125,16 +159,38 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
           ))}
 
           <div className="form-group full-width">
-            <label>Description *</label>
-            <textarea rows={3} value={description} onChange={(e) => setDescription(e.target.value)} required />
+            <label>Description</label>
+            <textarea
+              rows={3}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              style={emptyText(description) ? errorBorder : undefined}
+            />
+            {emptyText(description) && <small data-field-error style={errorText}>{MESSAGE}</small>}
           </div>
+
           <div className="form-group full-width">
-            <label>Ingredients (one per line) *</label>
-            <textarea rows={4} placeholder={"2 lbs chicken\n1/2 cup soy sauce"} value={ingredients} onChange={(e) => setIngredients(e.target.value)} required />
+            <label>Ingredients (one per line)</label>
+            <textarea
+              rows={4}
+              placeholder={"2 lbs chicken\n1/2 cup soy sauce"}
+              value={ingredients}
+              onChange={(e) => setIngredients(e.target.value)}
+              style={emptyText(ingredients) ? errorBorder : undefined}
+            />
+            {emptyText(ingredients) && <small data-field-error style={errorText}>{MESSAGE}</small>}
           </div>
+
           <div className="form-group full-width">
-            <label>Instructions (one per line) *</label>
-            <textarea rows={4} placeholder={"Heat oil in a pan\nAdd garlic and onions"} value={instructions} onChange={(e) => setInstructions(e.target.value)} required />
+            <label>Instructions (one per line)</label>
+            <textarea
+              rows={4}
+              placeholder={"Heat oil in a pan\nAdd garlic and onions"}
+              value={instructions}
+              onChange={(e) => setInstructions(e.target.value)}
+              style={emptyText(instructions) ? errorBorder : undefined}
+            />
+            {emptyText(instructions) && <small data-field-error style={errorText}>{MESSAGE}</small>}
           </div>
 
           {error && <p className="form-error">{error}</p>}
