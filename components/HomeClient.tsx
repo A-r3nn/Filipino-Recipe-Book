@@ -97,7 +97,7 @@ export default function HomeClient() {
     <>
       <div className="background" />
 
-      <nav className="navbar">
+      <nav className="navbar" style={{ position: "relative", zIndex: 2000 }}>
         <div className="header">
           <h1 className="Page-title">Kalderong Pinoy</h1>
           <p className="tagline">Discover authentic Filipino dishes</p>
@@ -115,7 +115,7 @@ export default function HomeClient() {
               <button className="menu-btn" onClick={() => setMenuOpen((o) => !o)}>
                 Menu <span className="arrow">{menuOpen ? "▲" : "▼"}</span>
               </button>
-              <div className="dropdown-menu" style={{ display: menuOpen ? "block" : "none" }}>
+              <div className="dropdown-menu" style={{ display: menuOpen ? "block" : "none", zIndex: 2100 }}>
                 <a href="#" onClick={(e) => { e.preventDefault(); setMenuOpen(false); setForm({}); }}>
                   <span className="icon green">+</span> Add New Recipe
                 </a>
@@ -138,7 +138,7 @@ export default function HomeClient() {
       </nav>
 
       {mode !== "browse" && (
-        <div style={{ background: "#e67e22", color: "#fff", textAlign: "center", padding: "10px 16px", fontWeight: 600, position: "sticky", top: 0, zIndex: 900 }}>
+        <div style={{ background: "#e67e22", color: "#fff", textAlign: "center", padding: "10px 16px", fontWeight: 600, position: "relative", zIndex: 1 }}>
           {mode === "edit" ? "✏ Edit Mode — click a recipe card to edit it" : "🗑 Delete Mode — click a recipe card to delete it"}
           <button
             onClick={() => setMode("browse")}
