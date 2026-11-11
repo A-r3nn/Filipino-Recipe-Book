@@ -29,11 +29,13 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
   const [error, setError] = useState("");
 
   const existing = [recipe?.image ?? null, recipe?.image2 ?? null, recipe?.image3 ?? null];
-  const labels = ["Image (optional)", "Image 2 (optional)", "Image 3 (optional)"];
+  const labels = ["Image", "Image 2 (optional)", "Image 3 (optional)"];
 
   // A field shows its error after the first Add/Save click, and clears once it has text
   const emptyText = (v: string) => submitted && !v.trim();
   const emptyServings = submitted && (!servings || Number(servings) < 1);
+  // the first image is required (Image 2 and 3 are optional); when editing, the existing image counts
+  const emptyImage = submitted && !files[0] && !existing[0];
 
   function pickFile(i: number, file: File | null) {
     setFiles((prev) => prev.map((f, idx) => (idx === i ? file : f)));
@@ -51,7 +53,8 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
       Number(servings) < 1 ||
       !description.trim() ||
       !ingredients.trim() ||
-      !instructions.trim();
+      !instructions.trim() ||
+      (!files[0] && !existing[0]);
 
     if (invalid) {
       // jump to the first field that has an error
@@ -148,7 +151,15 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
           {labels.map((label, i) => (
             <div className="form-group full-width" key={label}>
               <label>{label}</label>
-              <input type="file" accept="image/*" onChange={(e) => pickFile(i, e.target.files?.[0] ?? null)} />
+              <input
+                type="file"
+                accept="image/*"
+                onChange={(e) => pickFile(i, e.target.files?.[0] ?? null)}
+                style={i === 0 && emptyImage ? errorBorder : undefined}
+              />
+              {i === 0 && emptyImage && (
+                <small data-field-error style={errorText}>Please choose an image.</small>
+              )}
               {files[i] ? (
                 <small>New file: {files[i]!.name}</small>
               ) : existing[i] ? (
