@@ -1,13 +1,12 @@
-import type { Metadata } from "next";
 import "./globals.css";
 import "./extra.css";
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "Kalderong Pinoy",
   description: "Discover authentic Filipino dishes",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body>{children}</body>

@@ -4,8 +4,6 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 
-type Mode = "login" | "register" | "guest";
-
 const icon = {
   width: 20,
   height: 20,
@@ -13,8 +11,8 @@ const icon = {
   fill: "none",
   stroke: "currentColor",
   strokeWidth: 2,
-  strokeLinecap: "round" as const,
-  strokeLinejoin: "round" as const,
+  strokeLinecap: "round",
+  strokeLinejoin: "round",
 };
 
 const UserIcon = () => (
@@ -35,7 +33,7 @@ const EyeOffIcon = () => (
 
 export default function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>("login");
+  const [mode, setMode] = useState("login");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -46,7 +44,7 @@ export default function LoginPage() {
   const [info, setInfo] = useState("");
   const [busy, setBusy] = useState(false);
 
-  function switchMode(next: Mode) {
+  function switchMode(next) {
     setMode(next);
     setError("");
     setInfo("");
@@ -58,7 +56,7 @@ export default function LoginPage() {
     setShowConfirm(false);
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setInfo("");

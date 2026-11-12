@@ -1,29 +1,23 @@
 "use client";
 
 import { useState } from "react";
-import { supabase, uploadImage, type Category, type Recipe } from "@/lib/supabase";
-
-type Props = {
-  categories: Category[];
-  recipe?: Recipe; // present = edit mode, missing = add mode
-  onClose: () => void;
-  onSaved: () => void;
-};
+import { supabase, uploadImage } from "@/lib/supabase";
 
 const MESSAGE = "Please fill out this field.";
-const errorText = { color: "#d93025", fontSize: 12, marginTop: 4, display: "block" } as const;
-const errorBorder = { borderColor: "#d93025" } as const;
+const errorText = { color: "#d93025", fontSize: 12, marginTop: 4, display: "block" };
+const errorBorder = { borderColor: "#d93025" };
 
-export default function RecipeForm({ categories, recipe, onClose, onSaved }: Props) {
+// recipe is given = edit mode, missing = add mode
+export default function RecipeForm({ categories, recipe, onClose, onSaved }) {
   const editing = !!recipe;
   const [title, setTitle] = useState(recipe?.title ?? "");
-  const [categoryId, setCategoryId] = useState<string>(recipe?.category_id ? String(recipe.category_id) : "");
+  const [categoryId, setCategoryId] = useState(recipe?.category_id ? String(recipe.category_id) : "");
   const [cookingTime, setCookingTime] = useState(recipe?.cooking_time ?? "");
   const [servings, setServings] = useState(recipe?.servings ? String(recipe.servings) : "");
   const [description, setDescription] = useState(recipe?.description ?? "");
   const [ingredients, setIngredients] = useState(recipe?.ingredients ?? "");
   const [instructions, setInstructions] = useState(recipe?.instructions ?? "");
-  const [files, setFiles] = useState<(File | null)[]>([null, null, null]);
+  const [files, setFiles] = useState([null, null, null]);
   const [submitted, setSubmitted] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -32,17 +26,17 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
   const labels = ["Image", "Image 2 (optional)", "Image 3 (optional)"];
 
   // A field shows its error after the first Add/Save click, and clears once it has text
-  const emptyText = (v: string) => submitted && !v.trim();
+  const emptyText = (v) => submitted && !v.trim();
   const emptyServings = submitted && (!servings || Number(servings) < 1);
   const emptyCategory = submitted && !categoryId;
   // the first image is required (Image 2 and 3 are optional); when editing, the existing image counts
   const emptyImage = submitted && !files[0] && !existing[0];
 
-  function pickFile(i: number, file: File | null) {
+  function pickFile(i, file) {
     setFiles((prev) => prev.map((f, idx) => (idx === i ? file : f)));
   }
 
-  async function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setSubmitted(true);
@@ -84,12 +78,12 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
         image3: urls[2],
       };
       const { error } = editing
-        ? await supabase.from("recipes").update(payload).eq("id", recipe!.id)
+        ? await supabase.from("recipes").update(payload).eq("id", recipe.id)
         : await supabase.from("recipes").insert(payload);
       if (error) throw error;
       onSaved();
     } catch (err) {
-      setError((err as { message?: string })?.message ?? "Something went wrong.");
+      setError(err?.message ?? "Something went wrong.");
       setSaving(false);
     }
   }
@@ -170,10 +164,10 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
                 <small data-field-error style={errorText}>Please choose an image.</small>
               )}
               {files[i] ? (
-                <small>New file: {files[i]!.name}</small>
+                <small>New file: {files[i].name}</small>
               ) : existing[i] ? (
                 // eslint-disable-next-line @next/next/no-img-element
-                <img className="thumb" src={existing[i]!} alt="Current" />
+                <img className="thumb" src={existing[i]} alt="Current" />
               ) : null}
             </div>
           ))}

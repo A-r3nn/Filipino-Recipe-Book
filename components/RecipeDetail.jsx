@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
-import { supabase, type Recipe } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 
-const lines = (text: string | null) =>
+const lines = (text) =>
   (text ?? "").split("\n").map((l) => l.trim()).filter(Boolean);
 
 export default function RecipeDetail() {
-  const { id } = useParams<{ id: string }>();
-  const [recipe, setRecipe] = useState<Recipe | null>(null);
+  const { id } = useParams();
+  const [recipe, setRecipe] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -20,7 +20,7 @@ export default function RecipeDetail() {
       .eq("id", Number(id))
       .maybeSingle()
       .then(({ data }) => {
-        setRecipe(data as unknown as Recipe | null);
+        setRecipe(data);
         setLoading(false);
       });
   }, [id]);
@@ -34,7 +34,7 @@ export default function RecipeDetail() {
       </div>
     );
 
-  const images = [recipe.image, recipe.image2, recipe.image3].filter(Boolean) as string[];
+  const images = [recipe.image, recipe.image2, recipe.image3].filter(Boolean);
 
   return (
     <div className="detail-page">

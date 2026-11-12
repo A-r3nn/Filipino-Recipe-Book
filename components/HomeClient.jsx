@@ -3,26 +3,24 @@
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { supabase, type Category, type Recipe } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase";
 import { useAuth } from "@/lib/useAuth";
 import RecipeForm from "./RecipeForm";
-
-type Mode = "browse" | "edit" | "delete";
 
 export default function HomeClient() {
   const router = useRouter();
   const { user, profile, isAdmin } = useAuth();
 
-  const [recipes, setRecipes] = useState<Recipe[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [recipes, setRecipes] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState("All");
-  const [favorites, setFavorites] = useState<number[]>([]);
+  const [favorites, setFavorites] = useState([]);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [mode, setMode] = useState<Mode>("browse");
-  const [form, setForm] = useState<{ recipe?: Recipe } | null>(null);
+  const [mode, setMode] = useState("browse");
+  const [form, setForm] = useState(null);
 
   const loadRecipes = useCallback(async () => {
     const [r, c] = await Promise.all([
@@ -30,17 +28,19 @@ export default function HomeClient() {
       supabase.from("categories").select("*").order("id"),
     ]);
     if (r.error) setError(r.error.message);
-    else setRecipes(r.data as unknown as Recipe[]);
+    else setRecipes(r.data);
     if (c.data) setCategories(c.data);
     setLoading(false);
   }, []);
 
   useEffect(() => {
+   
     loadRecipes();
   }, [loadRecipes]);
 
   useEffect(() => {
     if (!user) {
+    
       setFavorites([]);
       return;
     }
@@ -51,7 +51,7 @@ export default function HomeClient() {
       .then(({ data }) => setFavorites((data ?? []).map((f) => f.recipe_id)));
   }, [user]);
 
-  async function toggleFavorite(id: number) {
+  async function toggleFavorite(id) {
     if (!user) {
       router.push("/login");
       return;
@@ -65,7 +65,7 @@ export default function HomeClient() {
     }
   }
 
-  async function deleteRecipe(r: Recipe) {
+  async function deleteRecipe(r) {
     if (!confirm(`Delete "${r.title}"?`)) return;
     const { error } = await supabase.from("recipes").delete().eq("id", r.id);
     if (error) {
