@@ -17,9 +17,9 @@ const errorBorder = { borderColor: "#d93025" } as const;
 export default function RecipeForm({ categories, recipe, onClose, onSaved }: Props) {
   const editing = !!recipe;
   const [title, setTitle] = useState(recipe?.title ?? "");
-  const [categoryId, setCategoryId] = useState<number>(recipe?.category_id ?? categories[0]?.id ?? 0);
+  const [categoryId, setCategoryId] = useState<string>(recipe?.category_id ? String(recipe.category_id) : "");
   const [cookingTime, setCookingTime] = useState(recipe?.cooking_time ?? "");
-  const [servings, setServings] = useState(String(recipe?.servings ?? 4));
+  const [servings, setServings] = useState(recipe?.servings ? String(recipe.servings) : "");
   const [description, setDescription] = useState(recipe?.description ?? "");
   const [ingredients, setIngredients] = useState(recipe?.ingredients ?? "");
   const [instructions, setInstructions] = useState(recipe?.instructions ?? "");
@@ -34,6 +34,7 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
   // A field shows its error after the first Add/Save click, and clears once it has text
   const emptyText = (v: string) => submitted && !v.trim();
   const emptyServings = submitted && (!servings || Number(servings) < 1);
+  const emptyCategory = submitted && !categoryId;
   // the first image is required (Image 2 and 3 are optional); when editing, the existing image counts
   const emptyImage = submitted && !files[0] && !existing[0];
 
@@ -48,6 +49,7 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
 
     const invalid =
       !title.trim() ||
+      !categoryId ||
       !cookingTime.trim() ||
       !servings ||
       Number(servings) < 1 ||
@@ -71,7 +73,7 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
       );
       const payload = {
         title: title.trim(),
-        category_id: categoryId,
+        category_id: Number(categoryId),
         cooking_time: cookingTime.trim(),
         servings: Number(servings),
         description: description.trim(),
@@ -93,7 +95,7 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
   }
 
   return (
-    <div className="modal-overlay" style={{ display: "flex" }}>
+    <div className="modal-overlay" style={{ display: "flex", zIndex: 3000 }}>
       <div className="modal-box">
         <div className="modal-header">
           <h2>{editing ? "Edit Recipe" : "Add New Recipe"}</h2>
@@ -115,11 +117,17 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
           <div className="form-row">
             <div className="form-group">
               <label>Category</label>
-              <select value={categoryId} onChange={(e) => setCategoryId(Number(e.target.value))}>
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                style={emptyCategory ? errorBorder : undefined}
+              >
+                <option value="">Select category</option>
                 {categories.map((c) => (
                   <option key={c.id} value={c.id}>{c.name}</option>
                 ))}
               </select>
+              {emptyCategory && <small data-field-error style={errorText}>{MESSAGE}</small>}
             </div>
             <div className="form-group">
               <label>Cooking Time</label>
@@ -140,6 +148,7 @@ export default function RecipeForm({ categories, recipe, onClose, onSaved }: Pro
               <input
                 type="number"
                 min={1}
+                placeholder="e.g., 4"
                 value={servings}
                 onChange={(e) => setServings(e.target.value)}
                 style={emptyServings ? errorBorder : undefined}
